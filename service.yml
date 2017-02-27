@@ -1,0 +1,70 @@
+Parameters:
+  Tag:
+    Type: String
+    Default: latest
+
+  DesiredCount:
+    Type: Number
+    Default: 0
+
+  TargetGroup:
+    Type: String
+
+  Cluster:
+    Type: String
+
+
+Resources:
+  
+  ConfigService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: default
+      DesiredCount: !Ref DesiredCount
+      TaskDefinition: !Ref ConfigTaskDefinition
+      DeploymentConfiguration: 
+        MaximumPercent: 100
+        MinimumHealthyPercent: 0
+  LoginService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: default
+      DesiredCount: !Ref DesiredCount
+      TaskDefinition: !Ref LoginTaskDefinition
+      DeploymentConfiguration: 
+        MaximumPercent: 100
+        MinimumHealthyPercent: 0
+        
+  ConfigTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub ${AWS::StackName}-simple-app-config
+      ContainerDefinitions:
+        - Name: simple-app-config
+          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/codecheck:${Tag}
+          Essential: true
+          Memory: 1024
+          Cpu: 384
+          PortMappings:
+            - 
+             ContainerPort: 80
+             HostPort: 80
+         
+  LoginTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub ${AWS::StackName}-simple-app-login
+      ContainerDefinitions:
+        - Name: simple-app-login
+          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/loginrepo:${Tag}
+          Essential: true
+          Memory: 1024
+          Cpu: 384
+          PortMappings:
+            - 
+             ContainerPort: 80
+             HostPort: 81
+               
+Outputs:
+  StackName:
+    Value: !Ref AWS::StackName
